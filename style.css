@@ -643,3 +643,20 @@ div:where(.swal2-container) div:where(.swal2-popup) {
     padding: 8px 16px 20px;
   }
 }
+
+/* 禁止系統長按選單與縮放 */
+* {
+    -webkit-tap-highlight-color: transparent; /* 移除點擊藍色高亮 */
+    touch-action: manipulation; /* 最佳化觸控，防止快速點擊縮放 */
+}
+
+html, body {
+    /* 禁止頁面被使用者縮放 */
+    overscroll-behavior-y: contain; /* 防止 iOS 下拉重新整理的橡皮筋效果 */
+    user-select: none; /* 防止文字被選取，看起來更像 App */
+}
+
+/* 讓輸入框還是可以選取文字 */
+input, textarea {
+    user-select: text;
+}
