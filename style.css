@@ -408,6 +408,7 @@ input:focus, select:focus {
   color: #8b7d70;
   padding-left: 12px;
   border-left: 6px solid var(--primary-yellow);
+  border-right: 6px solid var(--primary-yellow);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -659,4 +660,42 @@ html, body {
 /* 讓輸入框還是可以選取文字 */
 input, textarea {
     user-select: text;
+}
+
+/* ===== Month Navigation ===== */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.month-nav h3 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.btn-month-nav {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--primary-green);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: bold;
+}
+
+.btn-month-nav:hover {
+  background-color: rgba(90, 191, 152, 0.1);
+  transform: scale(1.1);
+}
+
+.btn-month-nav:active {
+  transform: scale(0.95);
 }

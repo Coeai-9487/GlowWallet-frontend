@@ -3,6 +3,8 @@ let token = localStorage.getItem("token") || null;
 let categories = [];
 let transactions = [];
 let budget = { id: "1", amount: "0" };
+let currentDisplayMonth = new Date().getMonth(); // 0-11
+let currentDisplayYear = new Date().getFullYear();
 
 // ===== DOM Elements =====
 const landingSection = document.getElementById("landing-section");
@@ -28,6 +30,9 @@ const budgetRemaining = document.getElementById("budget-remaining");
 const budgetProgressBar = document.getElementById("budget-progress-bar");
 const totalBudget = document.getElementById("total-budget");
 const budgetPercent = document.getElementById("budget-percent");
+
+const prevMonthBtn = document.getElementById("prev-month-btn");
+const nextMonthBtn = document.getElementById("next-month-btn");
 
 // ===== API Helper =====
 async function api(endpoint, options = {}) {
@@ -128,15 +133,24 @@ async function loadBudget() {
 
 // ===== Render Functions =====
 function renderTransactions() {
-  if (transactions.length === 0) {
+  // 先篩選出當月的交易
+  const monthlyTransactions = transactions.filter((txn) => {
+    const txnDate = new Date(txn.date);
+    return (
+      txnDate.getMonth() === currentDisplayMonth &&
+      txnDate.getFullYear() === currentDisplayYear
+    );
+  });
+
+  if (monthlyTransactions.length === 0) {
     transactionList.innerHTML = `<div style="text-align:center; padding:20px; color:#9ca095;">
-      🍃 這裡空空的，還沒有紀錄喔！
+      🍃 這個月空空的，還沒有紀錄喔！
     </div>`;
     return;
   }
 
   // 按 ID 排序（新的在前），如果 ID 相同才按日期
-  const sorted = [...transactions].sort((a, b) => {
+  const sorted = [...monthlyTransactions].sort((a, b) => {
     // 嘗試將 ID 轉為數字比較（處理 txn-timestamp 格式）
     const getIdNum = (id) => {
       const match = id.match(/(\d+)$/);
@@ -184,18 +198,14 @@ function renderTransactions() {
 }
 
 function updateSummary() {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  // 更新標題為當月
-  transactionListTitle.textContent = `${currentMonth + 1}月收支`;
+  // 更新標題為當前顯示的月份
+  transactionListTitle.textContent = `${currentDisplayMonth + 1}月收支`;
 
   const monthlyTransactions = transactions.filter((txn) => {
     const txnDate = new Date(txn.date);
     return (
-      txnDate.getMonth() === currentMonth &&
-      txnDate.getFullYear() === currentYear
+      txnDate.getMonth() === currentDisplayMonth &&
+      txnDate.getFullYear() === currentDisplayYear
     );
   });
 
@@ -675,6 +685,42 @@ logoutBtn.addEventListener("click", logout);
 btnAddTransaction.addEventListener("click", openAddTransactionModal);
 btnManageCategory.addEventListener("click", openManageCategoryModal);
 budgetSection.addEventListener("click", openBudgetModal);
+
+// 月份導航
+function goToPreviousMonth() {
+  currentDisplayMonth--;
+  if (currentDisplayMonth < 0) {
+    currentDisplayMonth = 11;
+    currentDisplayYear--;
+  }
+  renderTransactions();
+  updateSummary();
+}
+
+function goToNextMonth() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthLimit = new Date(today);
+  nextMonthLimit.setMonth(nextMonthLimit.getMonth() + 1);
+  
+  const nextMonth = new Date(currentDisplayYear, currentDisplayMonth + 1, 1);
+  
+  // 防止選擇未來的月份（超過當月）
+  if (nextMonth >= nextMonthLimit) {
+    return;
+  }
+  
+  currentDisplayMonth++;
+  if (currentDisplayMonth > 11) {
+    currentDisplayMonth = 0;
+    currentDisplayYear++;
+  }
+  renderTransactions();
+  updateSummary();
+}
+
+prevMonthBtn.addEventListener("click", goToPreviousMonth);
+nextMonthBtn.addEventListener("click", goToNextMonth);
 
 // ===== Initialize =====
 async function init() {
