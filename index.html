@@ -70,8 +70,16 @@
                 <button id="logout-btn" class="btn btn-sm btn-secondary">登出</button>
             </header>
 
-            <!-- 帳戶統計 -->
-            <div class="bells-card">
+            <!-- 分頁標籤 -->
+            <div class="tab-navigation">
+                <button id="tab-accounting" class="tab-btn active" data-tab="accounting">💳 記帳</button>
+                <button id="tab-health" class="tab-btn" data-tab="health">❤️ 健康監測</button>
+            </div>
+
+            <!-- 記帳分頁 -->
+            <div id="tab-accounting-content" class="tab-content active">
+                <!-- 帳戶統計 -->
+                <div class="bells-card">
                 <div class="budget-main-display" id="budget-section">
                     <span class="label-lg">本月還能花</span>
                     <div class="amount-hero" id="budget-remaining">$0</div>
@@ -118,6 +126,77 @@
                 </div>
                 <div id="transaction-list" class="transaction-list">
                     <!-- 動態載入 -->
+                </div>
+            </div>
+            </div>
+
+            <!-- 健康監測分頁 -->
+            <div id="tab-health-content" class="tab-content">
+                <div class="health-container">
+                    <!-- 血糖記錄卡片 -->
+                    <div class="health-card blood-sugar-card">
+                        <div class="health-card-header">
+                            <span class="health-icon">🩸</span>
+                            <h3>血糖記錄</h3>
+                        </div>
+                        <form id="blood-sugar-form" class="health-form">
+                            <div class="form-group">
+                                <label>記錄時間</label>
+                                <input type="datetime-local" id="blood-sugar-time" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>血糖值 (mg/dL)</label>
+                                <input type="number" id="blood-sugar-value" class="form-input" placeholder="例：120" min="0" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>測量位置</label>
+                                <select id="blood-sugar-location" class="form-input">
+                                    <option value="空腹">空腹</option>
+                                    <option value="飯後2小時">飯後2小時</option>
+                                    <option value="睡前">睡前</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>備註</label>
+                                <input type="text" id="blood-sugar-note" class="form-input" placeholder="例：用藥後、早餐後">
+                            </div>
+                            <button type="submit" class="btn btn-health blood-sugar-btn">💾 保存血糖</button>
+                        </form>
+                    </div>
+
+                    <!-- 血壓/心率記錄卡片 -->
+                    <div class="health-card blood-pressure-card">
+                        <div class="health-card-header">
+                            <span class="health-icon">💪</span>
+                            <h3>血壓/心率記錄</h3>
+                        </div>
+                        <form id="blood-pressure-form" class="health-form">
+                            <div class="form-group">
+                                <label>記錄時間</label>
+                                <input type="datetime-local" id="blood-pressure-time" class="form-input" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>收縮壓 (高) mmHg</label>
+                                    <input type="number" id="blood-pressure-sys" class="form-input" placeholder="例：120" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>舒張壓 (低) mmHg</label>
+                                    <input type="number" id="blood-pressure-dia" class="form-input" placeholder="例：80" min="0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>心率 (次/分)</label>
+                                <input type="number" id="heart-rate" class="form-input" placeholder="例：72" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>備註</label>
+                                <input type="text" id="blood-pressure-note" class="form-input" placeholder="例：晨起測量、運動後">
+                            </div>
+                            <button type="submit" class="btn btn-health blood-pressure-btn">💾 保存血壓</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>

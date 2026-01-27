@@ -12,6 +12,11 @@
   --border-color: #e0dacc;
   --radius: 24px;
   --shadow: 0 6px 0 rgba(0, 0, 0, 0.05);
+  
+  /* 健康監測色系 */
+  --health-warm-bg: #FFF5E1; /* 暖米色背景 */
+  --health-peach: #FFD8B1; /* 粉橘色 */
+  --health-text: #8B6F47; /* 溫暖咖啡色文字 */
 }
 
 /* ===== Reset & Base ===== */
@@ -660,6 +665,222 @@ html, body {
 /* 讓輸入框還是可以選取文字 */
 input, textarea {
     user-select: text;
+}
+
+/* ===== Tab Navigation ===== */
+.tab-navigation {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  color: var(--primary-green);
+  border-bottom-color: var(--primary-green);
+}
+
+.tab-btn:not(.active):hover {
+  color: var(--text-color);
+}
+
+/* ===== Tab Content ===== */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== Health Monitoring Section ===== */
+.health-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.health-card {
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.health-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(255, 216, 177, 0.3);
+}
+
+.health-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.health-card-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.blood-sugar-card {
+  background: linear-gradient(135deg, #FFF5E1 0%, #FFE8CC 100%);
+  border: 2px solid #FFD8B1;
+}
+
+.blood-sugar-card .health-card-header {
+  border-bottom-color: #FFD8B1;
+  color: #8B6F47;
+}
+
+.blood-sugar-card h3 {
+  color: #8B6F47;
+}
+
+.blood-pressure-card {
+  background: linear-gradient(135deg, #FFF5E1 0%, #FFECDB 100%);
+  border: 2px solid #FFCAB0;
+}
+
+.blood-pressure-card .health-card-header {
+  border-bottom-color: #FFCAB0;
+  color: #8B6F47;
+}
+
+.blood-pressure-card h3 {
+  color: #8B6F47;
+}
+
+/* ===== Health Form ===== */
+.health-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.health-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.health-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #8B6F47;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #FFD8B1;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-color);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #FFB880;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 216, 177, 0.3);
+}
+
+.form-input::placeholder {
+  color: #c4a57b;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ===== Health Buttons ===== */
+.btn-health {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.blood-sugar-btn {
+  background: linear-gradient(135deg, #FFD8B1 0%, #FFC38F 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 216, 177, 0.4);
+}
+
+.blood-sugar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 216, 177, 0.5);
+}
+
+.blood-sugar-btn:active {
+  transform: translateY(0);
+}
+
+.blood-pressure-btn {
+  background: linear-gradient(135deg, #FFCAB0 0%, #FFB084 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 202, 176, 0.4);
+}
+
+.blood-pressure-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 202, 176, 0.5);
+}
+
+.blood-pressure-btn:active {
+  transform: translateY(0);
 }
 
 /* ===== Month Navigation ===== */

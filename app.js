@@ -34,6 +34,25 @@ const budgetPercent = document.getElementById("budget-percent");
 const prevMonthBtn = document.getElementById("prev-month-btn");
 const nextMonthBtn = document.getElementById("next-month-btn");
 
+// ===== Health Monitoring DOM Elements =====
+const tabAccountingBtn = document.getElementById("tab-accounting");
+const tabHealthBtn = document.getElementById("tab-health");
+const tabAccountingContent = document.getElementById("tab-accounting-content");
+const tabHealthContent = document.getElementById("tab-health-content");
+
+const bloodSugarForm = document.getElementById("blood-sugar-form");
+const bloodSugarTime = document.getElementById("blood-sugar-time");
+const bloodSugarValue = document.getElementById("blood-sugar-value");
+const bloodSugarLocation = document.getElementById("blood-sugar-location");
+const bloodSugarNote = document.getElementById("blood-sugar-note");
+
+const bloodPressureForm = document.getElementById("blood-pressure-form");
+const bloodPressureTime = document.getElementById("blood-pressure-time");
+const bloodPressureSys = document.getElementById("blood-pressure-sys");
+const bloodPressureDia = document.getElementById("blood-pressure-dia");
+const heartRate = document.getElementById("heart-rate");
+const bloodPressureNote = document.getElementById("blood-pressure-note");
+
 // ===== API Helper =====
 async function api(endpoint, options = {}) {
   const url = `${CONFIG.API_BASE_URL}${endpoint}`;
@@ -721,6 +740,116 @@ function goToNextMonth() {
 
 prevMonthBtn.addEventListener("click", goToPreviousMonth);
 nextMonthBtn.addEventListener("click", goToNextMonth);
+
+// ===== Tab Navigation =====
+function switchTab(tabName) {
+  // 隱藏所有分頁內容
+  const allTabContents = document.querySelectorAll(".tab-content");
+  allTabContents.forEach(content => content.classList.remove("active"));
+
+  // 移除所有分頁按鈕的active
+  const allTabBtns = document.querySelectorAll(".tab-btn");
+  allTabBtns.forEach(btn => btn.classList.remove("active"));
+
+  // 顯示選定的分頁
+  if (tabName === "accounting") {
+    tabAccountingContent.classList.add("active");
+    tabAccountingBtn.classList.add("active");
+  } else if (tabName === "health") {
+    tabHealthContent.classList.add("active");
+    tabHealthBtn.classList.add("active");
+    initializeHealthForm(); // 初始化時間
+  }
+}
+
+tabAccountingBtn.addEventListener("click", () => switchTab("accounting"));
+tabHealthBtn.addEventListener("click", () => switchTab("health"));
+
+// ===== Health Monitoring Functions =====
+function getFormattedDateTime() {
+  const now = new Date();
+  // 轉換為本地時間格式 (datetime-local 格式：YYYY-MM-DDTHH:mm)
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const date = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  
+  return `${year}-${month}-${date}T${hours}:${minutes}`;
+}
+
+function initializeHealthForm() {
+  // 設定目前時間到表單
+  const currentDateTime = getFormattedDateTime();
+  bloodSugarTime.value = currentDateTime;
+  bloodPressureTime.value = currentDateTime;
+}
+
+// 血糖提交
+bloodSugarForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  
+  const data = {
+    type: "blood_sugar",
+    date_time: bloodSugarTime.value,
+    value: Number(bloodSugarValue.value),
+    location: bloodSugarLocation.value,
+    note: bloodSugarNote.value || "",
+  };
+
+  try {
+    await submitHealthData(data);
+    Swal.fire({
+      title: "成功！",
+      text: "血糖數據已保存",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    bloodSugarForm.reset();
+    initializeHealthForm(); // 重設時間
+  } catch (error) {
+    Swal.fire("失敗", error.message, "error");
+  }
+});
+
+// 血壓提交
+bloodPressureForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  
+  const data = {
+    type: "blood_pressure",
+    date_time: bloodPressureTime.value,
+    systolic: Number(bloodPressureSys.value),
+    diastolic: Number(bloodPressureDia.value),
+    heart_rate: heartRate.value ? Number(heartRate.value) : null,
+    note: bloodPressureNote.value || "",
+  };
+
+  try {
+    await submitHealthData(data);
+    Swal.fire({
+      title: "成功！",
+      text: "血壓/心率數據已保存",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    bloodPressureForm.reset();
+    initializeHealthForm(); // 重設時間
+  } catch (error) {
+    Swal.fire("失敗", error.message, "error");
+  }
+});
+
+// 提交健康監測數據到後端
+async function submitHealthData(data) {
+  const result = await api("/api/health", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return result;
+}
 
 // ===== Initialize =====
 async function init() {
