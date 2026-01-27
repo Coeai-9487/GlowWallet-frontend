@@ -920,6 +920,8 @@ function displayHealthRecords() {
   }
 
   healthRecordsList.innerHTML = filteredRecords.map(record => {
+    console.log('顯示記錄:', record); // 調試：檢查備註值
+    console.log('note 字段:', record.note, '長度:', (record.note || '').length); // 調試：明確顯示 note
     const dateTime = new Date(record.date_time);
     const formattedDate = dateTime.toLocaleDateString('zh-TW');
     const formattedTime = dateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
@@ -939,9 +941,9 @@ function displayHealthRecords() {
             </div>
             <div class="record-location">
               <span class="location-label">測量狀態：</span>
-              <span class="location-value">${record.location}</span>
+              <span class="location-value">${record.location || '未記錄'}</span>
             </div>
-            ${record.note ? `<div class="record-note">備註：${record.note}</div>` : ''}
+            ${(record.note && record.note.trim()) ? `<div class="record-note">備註：${record.note}</div>` : ''}
           </div>
         </div>
       `;
@@ -970,7 +972,7 @@ function displayHealthRecords() {
               </div>
               ` : ''}
             </div>
-            ${record.note ? `<div class="record-note">備註：${record.note}</div>` : ''}
+            ${(record.note && record.note.trim()) ? `<div class="record-note">備註：${record.note}</div>` : ''}
           </div>
         </div>
       `;
