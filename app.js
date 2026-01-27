@@ -43,6 +43,14 @@ const tabHealthContent = document.getElementById("tab-health-content");
 const bloodSugarForm = document.getElementById("blood-sugar-form");
 const bloodSugarTime = document.getElementById("blood-sugar-time");
 const bloodSugarValue = document.getElementById("blood-sugar-value");
+
+// Health Records Elements
+const healthRecordsList = document.getElementById("health-records-list");
+const filterAllHealthBtn = document.getElementById("filter-all-health");
+const filterBloodSugarBtn = document.getElementById("filter-blood-sugar");
+const filterBloodPressureBtn = document.getElementById("filter-blood-pressure");
+let allHealthRecords = [];
+let healthFilter = "all";
 const bloodSugarLocation = document.getElementById("blood-sugar-location");
 const bloodSugarNote = document.getElementById("blood-sugar-note");
 
@@ -759,11 +767,37 @@ function switchTab(tabName) {
     tabHealthContent.classList.add("active");
     tabHealthBtn.classList.add("active");
     initializeHealthForm(); // 初始化時間
+    loadHealthRecords(); // 加載健康記錄
   }
 }
 
 tabAccountingBtn.addEventListener("click", () => switchTab("accounting"));
 tabHealthBtn.addEventListener("click", () => switchTab("health"));
+
+// Health Records Filter Buttons
+filterAllHealthBtn.addEventListener("click", () => {
+  healthFilter = "all";
+  updateHealthFilterButtons();
+  displayHealthRecords();
+});
+
+filterBloodSugarBtn.addEventListener("click", () => {
+  healthFilter = "blood_sugar";
+  updateHealthFilterButtons();
+  displayHealthRecords();
+});
+
+filterBloodPressureBtn.addEventListener("click", () => {
+  healthFilter = "blood_pressure";
+  updateHealthFilterButtons();
+  displayHealthRecords();
+});
+
+function updateHealthFilterButtons() {
+  filterAllHealthBtn.classList.toggle("active", healthFilter === "all");
+  filterBloodSugarBtn.classList.toggle("active", healthFilter === "blood_sugar");
+  filterBloodPressureBtn.classList.toggle("active", healthFilter === "blood_pressure");
+}
 
 // ===== Health Monitoring Functions =====
 function getFormattedDateTime() {
@@ -808,6 +842,7 @@ bloodSugarForm.addEventListener("submit", async (e) => {
     });
     bloodSugarForm.reset();
     initializeHealthForm(); // 重設時間
+    loadHealthRecords(); // 重新加載記錄
   } catch (error) {
     Swal.fire("失敗", error.message, "error");
   }
@@ -837,6 +872,7 @@ bloodPressureForm.addEventListener("submit", async (e) => {
     });
     bloodPressureForm.reset();
     initializeHealthForm(); // 重設時間
+    loadHealthRecords(); // 重新加載記錄
   } catch (error) {
     Swal.fire("失敗", error.message, "error");
   }
@@ -849,6 +885,143 @@ async function submitHealthData(data) {
     body: JSON.stringify(data),
   });
   return result;
+}
+
+// 加載健康記錄
+async function loadHealthRecords() {
+  try {
+    const result = await api("/api/health", {
+      method: "GET",
+    });
+    allHealthRecords = result.data || [];
+    displayHealthRecords();
+  } catch (error) {
+    console.error("Failed to load health records:", error);
+    healthRecordsList.innerHTML = '<p class="empty-message">無法載入記錄</p>';
+  }
+}
+
+// 顯示健康記錄
+function displayHealthRecords() {
+  let filteredRecords = allHealthRecords;
+  
+  if (healthFilter === "blood_sugar") {
+    filteredRecords = allHealthRecords.filter(r => r.type === "blood_sugar");
+  } else if (healthFilter === "blood_pressure") {
+    filteredRecords = allHealthRecords.filter(r => r.type === "blood_pressure");
+  }
+
+  // 按時間倒序排列
+  filteredRecords.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+
+  if (filteredRecords.length === 0) {
+    healthRecordsList.innerHTML = '<p class="empty-message">暫無記錄</p>';
+    return;
+  }
+
+  healthRecordsList.innerHTML = filteredRecords.map(record => {
+    const dateTime = new Date(record.date_time);
+    const formattedDate = dateTime.toLocaleDateString('zh-TW');
+    const formattedTime = dateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+
+    if (record.type === "blood_sugar") {
+      return `
+        <div class="health-record-item blood-sugar-record">
+          <div class="record-header">
+            <span class="record-type">🩸 血糖</span>
+            <span class="record-time">${formattedDate} ${formattedTime}</span>
+            <button class="btn-delete-record" data-id="${record.id}" title="刪除記錄">✕</button>
+          </div>
+          <div class="record-content">
+            <div class="record-value">
+              <span class="value-label">血糖值</span>
+              <span class="value-number">${record.value} mg/dL</span>
+            </div>
+            <div class="record-location">
+              <span class="location-label">測量狀態：</span>
+              <span class="location-value">${record.location}</span>
+            </div>
+            ${record.note ? `<div class="record-note">備註：${record.note}</div>` : ''}
+          </div>
+        </div>
+      `;
+    } else if (record.type === "blood_pressure") {
+      return `
+        <div class="health-record-item blood-pressure-record">
+          <div class="record-header">
+            <span class="record-type">💪 血壓/心率</span>
+            <span class="record-time">${formattedDate} ${formattedTime}</span>
+            <button class="btn-delete-record" data-id="${record.id}" title="刪除記錄">✕</button>
+          </div>
+          <div class="record-content">
+            <div class="record-values">
+              <div class="value-item">
+                <span class="value-label">收縮壓</span>
+                <span class="value-number">${record.systolic} mmHg</span>
+              </div>
+              <div class="value-item">
+                <span class="value-label">舒張壓</span>
+                <span class="value-number">${record.diastolic} mmHg</span>
+              </div>
+              ${record.heart_rate ? `
+              <div class="value-item">
+                <span class="value-label">心率</span>
+                <span class="value-number">${record.heart_rate} bpm</span>
+              </div>
+              ` : ''}
+            </div>
+            ${record.note ? `<div class="record-note">備註：${record.note}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+  }).join('');
+
+  // 添加刪除按鈕的事件監聽
+  document.querySelectorAll('.btn-delete-record').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const recordId = btn.dataset.id;
+      deleteHealthRecord(recordId);
+    });
+  });
+}
+
+// 刪除健康記錄
+async function deleteHealthRecord(recordId) {
+  const result = await Swal.fire({
+    title: "確認刪除？",
+    text: "此操作無法復原",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ff7675",
+    cancelButtonColor: "#8b7d70",
+    confirmButtonText: "刪除",
+    cancelButtonText: "取消",
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  try {
+    await api(`/api/health/${recordId}`, {
+      method: "DELETE",
+    });
+
+    Swal.fire({
+      title: "已刪除",
+      text: "記錄已成功刪除",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    // 重新加載記錄
+    loadHealthRecords();
+  } catch (error) {
+    Swal.fire("失敗", error.message || "無法刪除記錄", "error");
+  }
 }
 
 // ===== Initialize =====

@@ -883,6 +883,200 @@ input, textarea {
   transform: translateY(0);
 }
 
+/* ===== Health Records Section ===== */
+.health-records-section {
+  margin-top: 32px;
+  padding: 20px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 2px solid #ffecd7;
+}
+
+.health-records-section h3 {
+  color: var(--health-text);
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.record-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 8px 12px;
+  border: 2px solid #e0dacc;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
+.filter-btn.active {
+  background: var(--primary-green);
+  border-color: var(--primary-green);
+  color: white;
+}
+
+.health-records-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--text-light);
+  padding: 20px;
+  font-size: 0.95rem;
+}
+
+.health-record-item {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid #e0dacc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.blood-sugar-record {
+  border-left-color: #FFD8B1;
+  background: #fffbf5;
+}
+
+.blood-pressure-record {
+  border-left-color: #FFCAB0;
+  background: #fffaf8;
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.record-type {
+  font-weight: 700;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
+.record-time {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  flex-grow: 1;
+  margin-left: 12px;
+}
+
+.btn-delete-record {
+  background: #ff7675;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-delete-record:hover {
+  background: #ff5555;
+  transform: scale(1.1);
+}
+
+.btn-delete-record:active {
+  transform: scale(0.95);
+}
+
+.record-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.record-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.value-label {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.value-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+
+.record-location,
+.record-values {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.location-label {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.location-value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.value-item {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 12px;
+  background: #f9f6f1;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.value-item .value-label {
+  font-size: 0.85rem;
+}
+
+.value-item .value-number {
+  font-size: 1rem;
+}
+
+.record-note {
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
 /* ===== Month Navigation ===== */
 .month-nav {
   display: flex;
