@@ -176,18 +176,18 @@ function renderTransactions() {
     return;
   }
 
-  // 按 ID 排序（新的在前），如果 ID 相同才按日期
+  // 按日期排序（新的在前），如果日期相同才按 ID
   const sorted = [...monthlyTransactions].sort((a, b) => {
-    // 嘗試將 ID 轉為數字比較（處理 txn-timestamp 格式）
+    // 優先按日期排序（最新的在前）
+    const dateDiff = new Date(b.date) - new Date(a.date);
+    if (dateDiff !== 0) return dateDiff;
+
+    // 日期相同時，按 ID 排序（處理 txn-timestamp 格式）
     const getIdNum = (id) => {
       const match = id.match(/(\d+)$/);
       return match ? Number(match[1]) : 0;
     };
-    const idDiff = getIdNum(b.id) - getIdNum(a.id);
-    if (idDiff !== 0) return idDiff;
-
-    // ID 無法比較時，按日期排序
-    return new Date(b.date) - new Date(a.date);
+    return getIdNum(b.id) - getIdNum(a.id);
   });
 
   transactionList.innerHTML = sorted
