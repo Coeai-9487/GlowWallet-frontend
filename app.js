@@ -799,6 +799,36 @@ function updateHealthFilterButtons() {
   filterBloodPressureBtn.classList.toggle("active", healthFilter === "blood_pressure");
 }
 
+function parseHealthDateTime(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  const rawValue = String(value).trim();
+
+  // 先嘗試標準格式解析
+  let date = new Date(rawValue);
+  if (!isNaN(date)) return date;
+
+  // 嘗試將中文上午/下午和斜線格式轉成可解析的 ISO-like 字串
+  const chineseMatch = rawValue.match(
+    /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\s*(上午|下午)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?$/
+  );
+  if (chineseMatch) {
+    let [, year, month, day, period, hour, minute, second] = chineseMatch;
+    hour = Number(hour);
+    if (period === "下午" && hour < 12) hour += 12;
+    if (period === "上午" && hour === 12) hour = 0;
+    second = second || "00";
+    const normalized = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${String(hour).padStart(2, "0")}:${minute}:${second}`;
+    date = new Date(normalized);
+    if (!isNaN(date)) return date;
+  }
+
+  // 最後嘗試斜線轉短橫線
+  const fallback = rawValue.replace(/\//g, "-").replace(/\s+/g, "T");
+  date = new Date(fallback);
+  return isNaN(date) ? null : date;
+}
+
 // ===== Health Monitoring Functions =====
 function getFormattedDateTime() {
   const now = new Date();
@@ -912,7 +942,14 @@ function displayHealthRecords() {
   }
 
   // 按時間倒序排列
-  filteredRecords.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+  filteredRecords.sort((a, b) => {
+    const dateA = parseHealthDateTime(a.date_time);
+    const dateB = parseHealthDateTime(b.date_time);
+    if (dateA && dateB) return dateB - dateA;
+    if (dateA) return -1;
+    if (dateB) return 1;
+    return 0;
+  });
 
   if (filteredRecords.length === 0) {
     healthRecordsList.innerHTML = '<p class="empty-message">暫無記錄</p>';
@@ -920,18 +957,22 @@ function displayHealthRecords() {
   }
 
   healthRecordsList.innerHTML = filteredRecords.map(record => {
-    console.log('顯示記錄:', record); // 調試：檢查備註值
-    console.log('note 字段:', record.note, '長度:', (record.note || '').length); // 調試：明確顯示 note
-    const dateTime = new Date(record.date_time);
-    const formattedDate = dateTime.toLocaleDateString('zh-TW');
-    const formattedTime = dateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+    const dateTime = parseHealthDateTime(record.date_time);
+    const formattedDate = dateTime
+      ? dateTime.toLocaleDateString('zh-TW')
+      : (record.date_time || '未知日期');
+    const formattedTime = dateTime
+      ? dateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+      : '';
+
+    const displayTime = formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
 
     if (record.type === "blood_sugar") {
       return `
         <div class="health-record-item blood-sugar-record">
           <div class="record-header">
             <span class="record-type">🩸 血糖</span>
-            <span class="record-time">${formattedDate} ${formattedTime}</span>
+            <span class="record-time">${displayTime}</span>
             <button class="btn-delete-record" data-id="${record.id}" title="刪除記錄">✕</button>
           </div>
           <div class="record-content">
@@ -952,7 +993,7 @@ function displayHealthRecords() {
         <div class="health-record-item blood-pressure-record">
           <div class="record-header">
             <span class="record-type">💪 血壓/心率</span>
-            <span class="record-time">${formattedDate} ${formattedTime}</span>
+            <span class="record-time">${displayTime}</span>
             <button class="btn-delete-record" data-id="${record.id}" title="刪除記錄">✕</button>
           </div>
           <div class="record-content">
