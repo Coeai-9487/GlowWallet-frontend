@@ -1,4 +1,4 @@
 // API 設定
 const CONFIG = {
-  API_BASE_URL: "https://glowwallet-backend.zeabur.app",
+  API_BASE_URL: "https://glow-wallet-backend.vercel.app",
 };
