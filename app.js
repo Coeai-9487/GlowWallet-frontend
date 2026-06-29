@@ -49,8 +49,10 @@ const healthRecordsList = document.getElementById("health-records-list");
 const filterAllHealthBtn = document.getElementById("filter-all-health");
 const filterBloodSugarBtn = document.getElementById("filter-blood-sugar");
 const filterBloodPressureBtn = document.getElementById("filter-blood-pressure");
+const healthSearchInput = document.getElementById("health-search-input");
 let allHealthRecords = [];
 let healthFilter = "all";
+let healthSearchQuery = "";
 const bloodSugarLocation = document.getElementById("blood-sugar-location");
 const bloodSugarNote = document.getElementById("blood-sugar-note");
 
@@ -793,6 +795,12 @@ filterBloodPressureBtn.addEventListener("click", () => {
   displayHealthRecords();
 });
 
+// Health Records Search
+healthSearchInput.addEventListener("input", (e) => {
+  healthSearchQuery = e.target.value.trim().toLowerCase();
+  displayHealthRecords();
+});
+
 function updateHealthFilterButtons() {
   filterAllHealthBtn.classList.toggle("active", healthFilter === "all");
   filterBloodSugarBtn.classList.toggle("active", healthFilter === "blood_sugar");
@@ -940,6 +948,14 @@ function displayHealthRecords() {
   } else if (healthFilter === "blood_pressure") {
     filteredRecords = allHealthRecords.filter(r => r.type === "blood_pressure");
   }
+  
+  // 應用搜尋過濾
+  if (healthSearchQuery) {
+    filteredRecords = filteredRecords.filter(record => {
+      const note = (record.note || "").toLowerCase();
+      return note.includes(healthSearchQuery);
+    });
+  }
 
   // 按時間倒序排列
   filteredRecords.sort((a, b) => {
@@ -973,6 +989,7 @@ function displayHealthRecords() {
           <div class="record-header">
             <span class="record-type">🩸 血糖</span>
             <span class="record-time">${displayTime}</span>
+            <button class="btn-edit-record" onclick="window.editHealthRecord('${record.id}', 'blood_sugar')" title="編輯記錄">✎</button>
             <button class="btn-delete-record" data-id="${record.id}" title="刪除記錄">✕</button>
           </div>
           <div class="record-content">
@@ -994,6 +1011,7 @@ function displayHealthRecords() {
           <div class="record-header">
             <span class="record-type">💪 血壓/心率</span>
             <span class="record-time">${displayTime}</span>
+            <button class="btn-edit-record" onclick="window.editHealthRecord('${record.id}', 'blood_pressure')" title="編輯記錄">✎</button>
             <button class="btn-delete-record" data-id="${record.id}" title="刪除記錄">✕</button>
           </div>
           <div class="record-content">
@@ -1029,6 +1047,161 @@ function displayHealthRecords() {
     });
   });
 }
+
+// 編輯健康記錄
+window.editHealthRecord = async function (recordId, recordType) {
+  try {
+    // 從 allHealthRecords 中找到要編輯的記錄
+    const record = allHealthRecords.find(r => r.id === recordId);
+    if (!record) {
+      Swal.fire("錯誤", "找不到該記錄", "error");
+      return;
+    }
+
+    if (recordType === "blood_sugar") {
+      const { value: formValues } = await Swal.fire({
+        title: "編輯血糖記錄",
+        html: `
+          <div style="text-align: left;">
+            <label>測量日期時間</label>
+            <input type="datetime-local" id="swal-sugar-datetime" class="swal2-input" value="${record.date_time || ''}" />
+            
+            <label>血糖值 (mg/dL)</label>
+            <input type="number" id="swal-sugar-value" class="swal2-input" value="${record.value || ''}" />
+            
+            <label>測量狀態</label>
+            <select id="swal-sugar-location" class="swal2-input" style="padding: 0.4rem;">
+              <option value="空腹" ${record.location === '空腹' ? 'selected' : ''}>空腹</option>
+              <option value="飯後" ${record.location === '飯後' ? 'selected' : ''}>飯後</option>
+              <option value="睡前" ${record.location === '睡前' ? 'selected' : ''}>睡前</option>
+              <option value="其他" ${record.location === '其他' ? 'selected' : ''}>其他</option>
+            </select>
+            
+            <label>備註</label>
+            <textarea id="swal-sugar-note" class="swal2-input" style="height: 60px;">${record.note || ''}</textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "更新",
+        cancelButtonText: "取消",
+        confirmButtonColor: "#5abf98",
+        didOpen: () => {
+          document.getElementById("swal-sugar-datetime").focus();
+        },
+        preConfirm: () => {
+          const datetime = document.getElementById("swal-sugar-datetime").value;
+          const value = document.getElementById("swal-sugar-value").value;
+          const location = document.getElementById("swal-sugar-location").value;
+          const note = document.getElementById("swal-sugar-note").value;
+
+          if (!datetime || !value) {
+            Swal.showValidationMessage("請填寫日期時間和血糖值");
+            return false;
+          }
+
+          return { datetime, value, location, note };
+        },
+      });
+
+      if (formValues) {
+        const updateData = {
+          type: "blood_sugar",
+          date_time: formValues.datetime,
+          value: Number(formValues.value),
+          location: formValues.location,
+          note: formValues.note || "",
+        };
+
+        await api(`/api/health/${recordId}`, {
+          method: "PUT",
+          body: JSON.stringify(updateData),
+        });
+
+        Swal.fire({
+          title: "成功！",
+          text: "血糖記錄已更新",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        loadHealthRecords();
+      }
+    } else if (recordType === "blood_pressure") {
+      const { value: formValues } = await Swal.fire({
+        title: "編輯血壓/心率記錄",
+        html: `
+          <div style="text-align: left;">
+            <label>測量日期時間</label>
+            <input type="datetime-local" id="swal-bp-datetime" class="swal2-input" value="${record.date_time || ''}" />
+            
+            <label>收縮壓 (mmHg)</label>
+            <input type="number" id="swal-bp-sys" class="swal2-input" value="${record.systolic || ''}" />
+            
+            <label>舒張壓 (mmHg)</label>
+            <input type="number" id="swal-bp-dia" class="swal2-input" value="${record.diastolic || ''}" />
+            
+            <label>心率 (bpm)</label>
+            <input type="number" id="swal-bp-hr" class="swal2-input" value="${record.heart_rate || ''}" />
+            
+            <label>備註</label>
+            <textarea id="swal-bp-note" class="swal2-input" style="height: 60px;">${record.note || ''}</textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "更新",
+        cancelButtonText: "取消",
+        confirmButtonColor: "#5abf98",
+        didOpen: () => {
+          document.getElementById("swal-bp-datetime").focus();
+        },
+        preConfirm: () => {
+          const datetime = document.getElementById("swal-bp-datetime").value;
+          const sys = document.getElementById("swal-bp-sys").value;
+          const dia = document.getElementById("swal-bp-dia").value;
+
+          if (!datetime || !sys || !dia) {
+            Swal.showValidationMessage("請填寫日期時間、收縮壓和舒張壓");
+            return false;
+          }
+
+          const hr = document.getElementById("swal-bp-hr").value;
+          const note = document.getElementById("swal-bp-note").value;
+
+          return { datetime, sys, dia, hr, note };
+        },
+      });
+
+      if (formValues) {
+        const updateData = {
+          type: "blood_pressure",
+          date_time: formValues.datetime,
+          systolic: Number(formValues.sys),
+          diastolic: Number(formValues.dia),
+          heart_rate: formValues.hr ? Number(formValues.hr) : null,
+          note: formValues.note || "",
+        };
+
+        await api(`/api/health/${recordId}`, {
+          method: "PUT",
+          body: JSON.stringify(updateData),
+        });
+
+        Swal.fire({
+          title: "成功！",
+          text: "血壓/心率記錄已更新",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        loadHealthRecords();
+      }
+    }
+  } catch (error) {
+    Swal.fire("失敗", error.message || "無法更新記錄", "error");
+  }
+};
 
 // 刪除健康記錄
 async function deleteHealthRecord(recordId) {

@@ -898,6 +898,31 @@ input, textarea {
   font-size: 1.1rem;
 }
 
+.record-search-box {
+  margin-bottom: 16px;
+}
+
+.record-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0dacc;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background: white;
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+}
+
+.record-search-input:focus {
+  outline: none;
+  border-color: #5abf98;
+  box-shadow: 0 0 0 3px rgba(90, 191, 152, 0.1);
+}
+
+.record-search-input::placeholder {
+  color: #a0978f;
+}
+
 .record-filters {
   display: flex;
   gap: 8px;
@@ -981,6 +1006,33 @@ input, textarea {
   color: var(--text-light);
   flex-grow: 1;
   margin-left: 12px;
+}
+
+.btn-edit-record {
+  background: #5abf98;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.btn-edit-record:hover {
+  background: #3fa878;
+  transform: scale(1.1);
+}
+
+.btn-edit-record:active {
+  transform: scale(0.95);
 }
 
 .btn-delete-record {
