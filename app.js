@@ -161,6 +161,24 @@ async function loadBudget() {
 }
 
 // ===== Render Functions =====
+// 取得中文星期，例如：星期一
+function getWeekdayZh(date) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d)) return "";
+  const map = ["日", "一", "二", "三", "四", "五", "六"];
+  return `星期${map[d.getDay()]}`;
+}
+
+function formatDateWithWeekday(dateInput) {
+  if (!dateInput) return "";
+  const d = new Date(dateInput);
+  if (isNaN(d)) return dateInput;
+  // 盡量保留原始日期格式（若為 YYYY-MM-DD 則維持），並加上中文星期
+  const original = String(dateInput);
+  const weekday = getWeekdayZh(d);
+  return `${original} ${weekday}`;
+}
 function renderTransactions() {
   // 先篩選出當月的交易
   const monthlyTransactions = transactions.filter((txn) => {
@@ -204,7 +222,7 @@ function renderTransactions() {
           </div>
           <div class="info">
             <span class="note">${txn.note || txn.category_name}</span>
-            <span class="meta">${txn.date} · ${txn.category_name}</span>
+            <span class="meta">${formatDateWithWeekday(txn.date)} · ${txn.category_name}</span>
           </div>
         </div>
         <div class="right">
@@ -981,7 +999,10 @@ function displayHealthRecords() {
       ? dateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
       : '';
 
-    const displayTime = formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    const weekday = dateTime ? `星期${['日','一','二','三','四','五','六'][dateTime.getDay()]}` : '';
+    const displayTime = formattedTime
+      ? `${formattedDate} ${weekday} ${formattedTime}`
+      : `${formattedDate} ${weekday}`;
 
     if (record.type === "blood_sugar") {
       return `
